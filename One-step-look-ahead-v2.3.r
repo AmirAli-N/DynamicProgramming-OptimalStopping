@@ -2,7 +2,7 @@ library(MASS)
 library(mvtnorm)
 ############################################################################
 y=c() #a list (for each dose) of vectors of observed responses
-n_simulation=19#number of simulations
+n_simulation=30#number of simulations
 dose=lapply(1:n_simulation, function(x) c()) #vector of optimal doses
 J=11 #number of doses
 patient=1000 #number of patients
@@ -28,15 +28,9 @@ alpha=1
 #sigma_string="std_dev=sqrt(10)"
 sigma_string="std_dev=10"
 #############################################################################
-#true_theta=c(0.0, 0.07, 0.18, 0.47, 1.19, 2.69, 5, 7.31, 8.81, 9.53, 9.82)
-#curve_st="sigmoid-significant"
-#target_dose=10
-#true_theta=c(0, 0.01, 0.02, 0.05, 0.12, 0.27, 0.5, 0.73, 0.88, 0.95, 0.98)
-#curve_st="sigmoid-not-significant"
-#target_dose=10
-true_theta=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-curve_st="flat"
-target_dose=1
+true_theta=c(0.0, 0.07, 0.18, 0.47, 1.19, 2.69, 5, 7.31, 8.81, 9.53, 9.82)
+curve_st="sigmoid-significant"
+target_dose=10
 #############################################################################
 ##read optimal dose allocation and estimation of optimal thetas from a file##
 for (reps in 1:n_simulation){
@@ -61,17 +55,17 @@ optimal_stopping<-function(k, y, mu, sigma, z_j){
 	temp_theta_sample=rmvnorm(M, mu, sigma)
 	ED95=c()
 	ED95=apply(temp_theta_sample, 1, function(z){
-													if (all(z<0)){
-														return(NA)
-													}else{
-														return (min(which(z>=0.95*max(z))))
-													}
-												})
+		if (all(z<0)){
+			return(NA)
+		}else{
+			return (min(which(z>=0.95*max(z))))
+		}
+	})
 	theta_ED=unlist(sapply(1:length(ED95), function(nt)	{
-											if (is.na(ED95[nt])==FALSE){
-												return(temp_theta_sample[nt, ED95[nt]])
-											}
-										}))
+		if (is.na(ED95[nt])==FALSE){
+			return(temp_theta_sample[nt, ED95[nt]])
+		}
+	}))
 	y_bar=sapply(1:length(theta_ED), function(nt) rnorm(n_p, theta_ED[nt], true_sigma))
 	y1_bar=sapply(1:length(theta_ED), function(nt) rnorm(n_p, placebo, true_sigma))
 	B=sapply(1:length(theta_ED), function(nt) pnorm(qnorm(0.999999)-sqrt(n_p)*(mean(y_bar[,nt])-mean(y1_bar[,nt]))/sqrt(2*true_sigma^2), lower.tail=FALSE))
@@ -80,28 +74,28 @@ optimal_stopping<-function(k, y, mu, sigma, z_j){
 	#########calculate U1#################################
 	y_temp=sapply(1:M, function(nt) rnorm(1, temp_theta_sample[nt, z_j], true_sigma))
 	U1_nt=sapply(1:M, function(nt) 	{
-										res=evolution_eq(mu, sigma, y_temp[nt], z_j)
-										mu_nt=res$mu
-										sigma_nt=res$sigma
-										temp2_theta_sample=rmvnorm(T, mu_nt, sigma_nt)
-										ED_95=c()
-										ED95=apply(temp2_theta_sample, 1, function(z) 	{
-																							if (all(z<0)){
-																								return(NA)
-																							}else{
-																								return (min(which(z>=0.95*max(z))))
-																							}
-																						})
-										theta_ED=unlist(sapply(1:length(ED95), function(nt2) 	{
-																				if(is.na(ED95[nt2])==FALSE){
-																					return(temp2_theta_sample[nt2, ED95[nt2]])
-																				}
-																			}))
-										y_bar=sapply(1:length(theta_ED), function(nt2) rnorm(n_p, theta_ED[nt2], true_sigma))
-										y1_bar=sapply(1:length(theta_ED), function(nt2) rnorm(n_p, placebo, true_sigma))
-										B=sapply(1:length(theta_ED), function(nt2) pnorm(qnorm(0.999999)-sqrt(n_p)*(mean(y_bar[,nt2])-mean(y1_bar[,nt2]))/sqrt(2*true_sigma^2), lower.tail=FALSE))
-										return (-c1*n_p+c2*mean(B*sapply(1:length(theta_ED), function(nt2) theta_ED[nt2]-placebo)))
-									})
+		res=evolution_eq(mu, sigma, y_temp[nt], z_j)
+		mu_nt=res$mu
+		sigma_nt=res$sigma
+		temp2_theta_sample=rmvnorm(T, mu_nt, sigma_nt)
+		ED_95=c()
+		ED95=apply(temp2_theta_sample, 1, function(z) 	{
+			if (all(z<0)){
+				return(NA)
+			}else{
+				return (min(which(z>=0.95*max(z))))
+			}
+		})
+		theta_ED=unlist(sapply(1:length(ED95), function(nt2) 	{
+			if(is.na(ED95[nt2])==FALSE){
+				return(temp2_theta_sample[nt2, ED95[nt2]])
+			}
+		}))
+		y_bar=sapply(1:length(theta_ED), function(nt2) rnorm(n_p, theta_ED[nt2], true_sigma))
+		y1_bar=sapply(1:length(theta_ED), function(nt2) rnorm(n_p, placebo, true_sigma))
+		B=sapply(1:length(theta_ED), function(nt2) pnorm(qnorm(0.999999)-sqrt(n_p)*(mean(y_bar[,nt2])-mean(y1_bar[,nt2]))/sqrt(2*true_sigma^2), lower.tail=FALSE))
+		return (-c1*n_p+c2*mean(B*sapply(1:length(theta_ED), function(nt2) theta_ED[nt2]-placebo)))
+	})
 	U1=-c1+mean(U1_nt)
 	U1=U1-100000
 	#decision=min(which(c(U0, U1, U2)==max(U0, U1, U2)))-1
@@ -170,9 +164,7 @@ for (reps in 1:n_simulation){
 }
 end_time=Sys.time()
 start_time-end_time
-#lapply(save_decision, write, file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/correct-selection/",toString(patient),"patients-one_step-",curve_st,".txt", sep=""), append=TRUE, ncolumns=1000)
-#lapply(save_objvalue, function(x) write.table(data.frame(x), file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/correct-selection/",toString(patient),"patients-one_step-obj",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=" ", eol="\n"))
 
-write.table(as.data.frame(t(matrix(unlist(save_objvalue), nrow=28, ncol=200, byrow=TRUE))), file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/correct-selection/",toString(patient),"patients-one_step-objvalue-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
-write.table(as.data.frame(t(matrix(unlist(save_decision), nrow=28, ncol=200, byrow=TRUE))), file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/correct-selection/",toString(patient),"patients-one_step-decision-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
+write.table(as.data.frame(t(matrix(unlist(save_objvalue), nrow=28, ncol=200, byrow=TRUE))), file=paste("C:/Results/correct-selection/",toString(patient),"one_step-objvalue-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
+write.table(as.data.frame(t(matrix(unlist(save_decision), nrow=28, ncol=200, byrow=TRUE))), file=paste("C:/Results/correct-selection/",toString(patient),"one_step-decision-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
 
