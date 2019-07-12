@@ -80,12 +80,12 @@ bound_d=c(unlist(lapply(difference, function(x) x[1])))
 smooth_b_u=loess.smooth(t_interv[1:length(bound_u)], bound_u*delta_m, span=1, degree=1, family="gaussian", evaluation=T)
 smooth_b_d=loess.smooth(t_interv[1:length(bound_u)], bound_d*delta_m, span=1, degree=1, family="gaussian", evaluation=T)
 
-write(smooth_b_u$y, file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/Upper_bound_smooth.txt", sep=""), append=FALSE, sep="\n")
-write(smooth_b_d$y, file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/Lower_bound_smooth.txt", sep=""), append=FALSE, sep="\n")
-write(smooth_b_d$x, file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/x_axis.txt", sep=""), append=FALSE, sep="\n")
+write(smooth_b_u$y, file=paste("C:/Results/Upper_bound_smooth.txt", sep=""), append=FALSE, sep="\n")
+write(smooth_b_d$y, file=paste("C:/Results/Lower_bound_smooth.txt", sep=""), append=FALSE, sep="\n")
+write(smooth_b_d$x, file=paste("C:/Results/x_axis.txt", sep=""), append=FALSE, sep="\n")
 
-write(bound_u, file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/Upper_bound.txt", sep=""), append=FALSE, sep="\n")
-write(bound_d, file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/Lower_bound.txt", sep=""), append=FALSE, sep="\n")
+write(bound_u, file=paste("C:/Results/Upper_bound.txt", sep=""), append=FALSE, sep="\n")
+write(bound_d, file=paste("C:/Results/Lower_bound.txt", sep=""), append=FALSE, sep="\n")
 
 end_time=Sys.time()
 start_time-end_time
@@ -116,5 +116,5 @@ for (reps in 3:n_simulation){
 			}
 	}
 }
-write.table(as.data.frame(diffusion_path), file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/correct-selection/",toString(patient),"patients-diff-path-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
-write.table(as.data.frame(objective_path), file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/correct-selection/",toString(patient),"patients-obj-path-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
+write.table(as.data.frame(diffusion_path), file=paste("C:/Results/correct-selection/",toString(patient),"patients-diff-path-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
+write.table(as.data.frame(objective_path), file=paste("C:/Results/correct-selection/",toString(patient),"patients-obj-path-",curve_st,".csv", sep=""), append=FALSE, row.names=FALSE, col.names=FALSE, sep=",", eol="\n")
