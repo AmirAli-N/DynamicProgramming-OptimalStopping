@@ -24,8 +24,8 @@ df_star=c()
 n_p=30 #number of patients in confirmatory phase-III
 c1=1000 #cost of sampling one more patient
 c2=1000000 #reward of one unit improvement over placebo
-M=100 #number of KG iterations
-n_exp=100 #number of generated sample paths in KG
+M=1000 #number of KG iterations
+n_exp=1000 #number of generated sample paths in KG
 start_time=0 #sart time of the algorithm
 end_time=0 #end time of the algorithm
 decision=c() #vector of optimal stopping for patient k
@@ -33,14 +33,6 @@ decision=c() #vector of optimal stopping for patient k
 true_theta=c(0.0, 0.07, 0.18, 0.47, 1.19, 2.69, 5, 7.31, 8.81, 9.53, 9.82)
 curve_st="sigmoid-significant"
 target_dose=10
-#true_theta=c(0, 0.01, 0.02, 0.05, 0.12, 0.27, 0.5, 0.73, 0.88, 0.95, 0.98)
-#curve_st="sigmoid-not-significant"
-#target_dose=10
-#true_theta=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-#curve_st="flat"
-#target_dose=1
-#sigma_string="std_dev=sqrt(1)"
-#sigma_string="std_dev=sqrt(10)"
 sigma_string="std_dev=10"
 ##################################################################################
 n_grid=20 #number of grid points on each axis
@@ -262,17 +254,17 @@ for(reps in 1:n_simulation){
 			theta_sample=rmvnorm(M, mu_n[[k]], sigma_n[[k]])
 			ED95=c()
 			ED95=apply(theta_sample, 1, function(z){
-														if (all(z<0)){
-															return(NA)
-														}else{
-															return (min(which(z>=0.95*max(z))))
-														}
-													})
+				if (all(z<0)){
+					return(NA)
+				}else{
+					return (min(which(z>=0.95*max(z))))
+				}
+			})
 			theta_ED=unlist(sapply(1:length(ED95), function(nt)	{
-																	if (is.na(ED95[nt])==FALSE){
-																		return(theta_sample[nt, ED95[nt]])
-																	}
-																}))
+				if (is.na(ED95[nt])==FALSE){
+					return(theta_sample[nt, ED95[nt]])
+				}
+			}))
 			s_n[k]=var(theta_ED)
 			m_n[k]=mean(theta_ED)
 			z_j=dose[[reps]][k]
@@ -281,17 +273,17 @@ for(reps in 1:n_simulation){
 			theta_sample=rmvnorm(M, mu_n[[k-1]], sigma_n[[k-1]])
 			ED95=c()
 			ED95=apply(theta_sample, 1, function(z){
-														if (all(z<0)){
-															return(NA)
-														}else{
-															return (min(which(z>=0.95*max(z))))
-														}
-													})
+				if (all(z<0)){
+					return(NA)
+				}else{
+					return (min(which(z>=0.95*max(z))))
+				}
+			})
 			theta_ED=unlist(sapply(1:length(ED95), function(nt)	{
-																	if (is.na(ED95[nt])==FALSE){
-																		return(theta_sample[nt, ED95[nt]])
-																	}
-																}))
+				if (is.na(ED95[nt])==FALSE){
+					return(theta_sample[nt, ED95[nt]])
+				}
+			}))
 			s_n[k]=var(theta_ED)
 			m_n[k]=mean(theta_ED)
 			#if(k%%5==0){
@@ -336,7 +328,7 @@ for(reps in 1:n_simulation){
 	mu_n=lapply(1:patient, function(x) c())
 	sigma_n=lapply(1:patient, function(x) matrix(0, nrow=J, ncol=J))
 }
-write.table(save_decision, file=paste("C:/Users/snasrol/Google Drive/Research-Optimal stopping in dose-finding clinical trials/Codes/Results/09-24-2018/correct-selection/200patients-one_step-",curve_st,".txt", sep=""), sep="\t", eol="\n", row.names=FALSE, col.names=FALSE)
+write.table(save_decision, file=paste("C:/Results/correct-selection/gridding-",curve_st,".txt", sep=""), sep="\t", eol="\n", row.names=FALSE, col.names=FALSE)
 end_time=Sys.time()
 start_time-end_time
 
